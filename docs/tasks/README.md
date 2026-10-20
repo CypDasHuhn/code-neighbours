@@ -11,7 +11,7 @@ more languages.
 | id | name | status | depends-on | scope |
 | --- | --- | --- | --- | --- |
 | 001 | [repository and build scaffold](001-repository-and-build-scaffold.md) | done | — | Engine and renderer Gradle builds, module skeletons, justfile, README links. |
-| 002 | [api graph contract](002-api-graph-contract.md) | todo | 001 | Frozen node/edge/expansion/socket DTOs and JSON codec. |
+| 002 | [api graph contract](002-api-graph-contract.md) | done | 001 | Frozen node/edge/expansion/socket DTOs and JSON codec. |
 | 003 | [lsp client and workspace](003-lsp-client-and-workspace.md) | todo | 001 | Stdio JSON-RPC client, Kotlin LSP wiring, gitignore-aware file discovery. |
 | 004 | [kotlin entity discovery and identity](004-kotlin-entity-discovery-and-identity.md) | todo | 002, 003 | Document symbols, visibility filtering, qualified names, stable ids. |
 | 005 | [neighbour expansion](005-neighbour-expansion.md) | todo | 002, 003, 004 | Incoming references and outgoing semantic-token/definition expansion. |

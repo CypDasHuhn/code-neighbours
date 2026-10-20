@@ -1,6 +1,6 @@
 ---
 name: API graph contract
-status: todo
+status: done
 depends-on: [001]
 reviewers: [api-fidelity, correctness]
 ---
