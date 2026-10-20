@@ -1,6 +1,6 @@
 ---
 name: Containment and grouping
-status: todo
+status: done
 depends-on: [002, 004]
 reviewers: [correctness, architecture]
 ---

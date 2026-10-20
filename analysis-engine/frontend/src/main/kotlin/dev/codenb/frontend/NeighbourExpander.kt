@@ -35,7 +35,14 @@ class NeighbourExpander(
         seed: Node,
         workspaceRoot: Path,
         frontend: LanguageFrontend,
-    ): Expansion {
+    ): Expansion = expandWithFiles(graphId, seed, workspaceRoot, frontend).expansion
+
+    fun expandWithFiles(
+        graphId: GraphId,
+        seed: Node,
+        workspaceRoot: Path,
+        frontend: LanguageFrontend,
+    ): ExpansionWithFiles {
         require(seed.kind == NodeKind.ENTITY) { "Seed must be an entity" }
         val seedUri = requireNotNull(seed.fileUri) { "Seed entity requires a file URI" }
         val context = Context(graphId, workspaceRoot, frontend, seed)
@@ -81,7 +88,7 @@ class NeighbourExpander(
                         }
                     }
             }
-            return context.expansion(seed)
+            return context.expansionWithFiles(seed)
         } finally {
             context.close()
         }
@@ -132,7 +139,13 @@ class NeighbourExpander(
             nodes[to.id] = to
         }
 
-        fun expansion(seedNode: Node): Expansion {
+        fun expansionWithFiles(seedNode: Node): ExpansionWithFiles =
+            ExpansionWithFiles(
+                expansion = expansion(seedNode),
+                fileTexts = files.values.associate { it.uri to it.text },
+            )
+
+        private fun expansion(seedNode: Node): Expansion {
             val edges =
                 observations.entries
                     .groupBy { (directed, _) -> EdgeKey.of(EdgeKind.REFERENCES, directed.from, directed.to) }

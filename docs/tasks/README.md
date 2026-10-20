@@ -16,7 +16,7 @@ more languages.
 | 004 | [kotlin entity discovery and identity](004-kotlin-entity-discovery-and-identity.md) | done | 002, 003 | Document symbols, visibility filtering, qualified names, stable ids. |
 | 005 | [neighbour expansion](005-neighbour-expansion.md) | done | 002, 003, 004 | Incoming references and outgoing semantic-token/definition expansion. |
 | 006 | [graph store and lazy cache](006-graph-store-and-lazy-cache.md) | done | 002, 005 | Per-LSP store, deduplication, expansion cache, revision checks. |
-| 007 | [containment and grouping](007-containment-and-grouping.md) | todo | 002, 004 | Entity→file→group nodes and file/group reference aggregation. |
+| 007 | [containment and grouping](007-containment-and-grouping.md) | done | 002, 004 | Entity→file→group nodes and file/group reference aggregation. |
 | 008 | [unix socket daemon](008-unix-socket-daemon.md) | todo | 002, 006 | NDJSON JSON-RPC daemon, permissions, lifecycle, error mapping. |
 | 009 | [cli and dot export](009-cli-and-dot-export.md) | todo | 005, 006, 007 | Seed selection, one-shot graph output, Graphviz writer. |
 | 010 | [renderer server](010-renderer-server.md) | todo | 008 | Ktor server, Unix-socket client, HTTP API, static assets. |
