@@ -12,7 +12,7 @@ more languages.
 | --- | --- | --- | --- | --- |
 | 001 | [repository and build scaffold](001-repository-and-build-scaffold.md) | done | — | Engine and renderer Gradle builds, module skeletons, justfile, README links. |
 | 002 | [api graph contract](002-api-graph-contract.md) | done | 001 | Frozen node/edge/expansion/socket DTOs and JSON codec. |
-| 003 | [lsp client and workspace](003-lsp-client-and-workspace.md) | todo | 001 | Stdio JSON-RPC client, Kotlin LSP wiring, gitignore-aware file discovery. |
+| 003 | [lsp client and workspace](003-lsp-client-and-workspace.md) | done | 001 | Stdio JSON-RPC client, Kotlin LSP wiring, gitignore-aware file discovery. |
 | 004 | [kotlin entity discovery and identity](004-kotlin-entity-discovery-and-identity.md) | todo | 002, 003 | Document symbols, visibility filtering, qualified names, stable ids. |
 | 005 | [neighbour expansion](005-neighbour-expansion.md) | todo | 002, 003, 004 | Incoming references and outgoing semantic-token/definition expansion. |
 | 006 | [graph store and lazy cache](006-graph-store-and-lazy-cache.md) | todo | 002, 005 | Per-LSP store, deduplication, expansion cache, revision checks. |
@@ -24,6 +24,7 @@ more languages.
 | 012 | [web navigation](012-web-navigation.md) | todo | 011 | Active node/connector, direction keys, crossroads, lazy HTTP expansion. |
 | 013 | [end-to-end kotlin](013-end-to-end-kotlin.md) | todo | 009, 012 | Real Kotlin fixture, manual checks, docs reconciliation. |
 | 014 | [additional language frontends](014-additional-language-frontends.md) | todo | 013 | JavaScript/TypeScript, Vue, C# frontends on the same graph contract. |
+| 015 | [lsp lifecycle hardening](015-lsp-lifecycle-hardening.md) | todo | 003 | Bounded close, no lock-held awaits, callback state, git failure handling. |
 
 ## Resolved decisions
 

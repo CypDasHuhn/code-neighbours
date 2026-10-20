@@ -1,6 +1,6 @@
 ---
 name: LSP client and workspace
-status: todo
+status: done
 depends-on: [001]
 reviewers: [lsp-fidelity, correctness]
 ---
@@ -47,3 +47,7 @@ Entity identity, expansion semantics, graph storage, and the daemon.
 LSP is the only intelligence source. Do not add tree-sitter or a fallback parser.
 The frontend module selects files and language ids; it does not interpret
 symbols.
+
+Deferred to ticket 015: replace the query read-lock-across-await pattern with
+in-flight request tracking and cancellation. Bounded close and forced teardown
+cover the correctness requirement until then.
