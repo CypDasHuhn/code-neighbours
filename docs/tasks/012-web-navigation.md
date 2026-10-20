@@ -1,7 +1,7 @@
 ---
 name: Web navigation
 status: todo
-depends-on: [011]
+depends-on: [011, 016]
 reviewers: [renderer-contract, correctness]
 ---
 

@@ -155,9 +155,15 @@ Engine socket:
 - Client methods: `initialize`, `graph/open`, `node/expand`, `node/get`,
   `graph/dot`, `shutdown`.
 - Server notifications: `cint/error` for recoverable failures.
-- `initialize` returns the protocol version, root, LSP id, and node kinds.
+- `initialize` returns the graph info (protocol version, root, LSP id, grouping,
+  edge kinds, and all node kinds the graph can return), the socket path, the
+  current open state and content revision, and `expandableNodeKinds`.
+  `nodeKinds` lists every kind that may appear in an expansion;
+  `expandableNodeKinds` lists the kinds that `node/expand` currently supports.
 - `node/expand` returns the requested node, its neighbours, and the connecting
-  edges, with the graph id and a content revision.
+  edges, with the graph id and a content revision. A revision that no longer
+  matches the current content is rejected with `invalid-graph` and both
+  revisions in the error details; the client reopens with a selector.
 
 Renderer HTTP API:
 

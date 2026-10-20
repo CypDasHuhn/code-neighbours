@@ -29,23 +29,26 @@ import java.security.MessageDigest
 
 class NeighbourExpander(
     private val session: LspSession,
+    private val workspaceFiles: Set<Path>? = null,
 ) {
     fun expand(
         graphId: GraphId,
         seed: Node,
         workspaceRoot: Path,
         frontend: LanguageFrontend,
-    ): Expansion = expandWithFiles(graphId, seed, workspaceRoot, frontend).expansion
+        revision: String? = null,
+    ): Expansion = expandWithFiles(graphId, seed, workspaceRoot, frontend, revision).expansion
 
     fun expandWithFiles(
         graphId: GraphId,
         seed: Node,
         workspaceRoot: Path,
         frontend: LanguageFrontend,
+        revision: String? = null,
     ): ExpansionWithFiles {
         require(seed.kind == NodeKind.ENTITY) { "Seed must be an entity" }
         val seedUri = requireNotNull(seed.fileUri) { "Seed entity requires a file URI" }
-        val context = Context(graphId, workspaceRoot, frontend, seed)
+        val context = Context(graphId, workspaceRoot, frontend, seed, revision)
         try {
             val seedPath = context.path(seedUri) ?: throw IllegalArgumentException("Seed file URI is not a file URI: $seedUri")
             val seedFile = context.file(seedPath)
@@ -99,13 +102,17 @@ class NeighbourExpander(
         workspaceRoot: Path,
         private val frontend: LanguageFrontend,
         private val seed: Node,
+        private val revisionOverride: String?,
     ) {
         private val root = workspaceRoot.toAbsolutePath().normalize()
         private val workspacePaths =
-            WorkspaceFiles
-                .discover(root, include = frontend.include, exclude = frontend.exclude)
-                .map { it.absolutePath.toAbsolutePath().normalize() }
-                .toSet()
+            workspaceFiles
+                ?.map { it.toAbsolutePath().normalize() }
+                ?.toSet()
+                ?: WorkspaceFiles
+                    .discover(root, include = frontend.include, exclude = frontend.exclude)
+                    .map { it.absolutePath.toAbsolutePath().normalize() }
+                    .toSet()
         private val files = mutableMapOf<Path, FileFacts>()
         private val opened = mutableListOf<String>()
         private val observations = mutableMapOf<Directed, Int>()
@@ -143,6 +150,7 @@ class NeighbourExpander(
             ExpansionWithFiles(
                 expansion = expansion(seedNode),
                 fileTexts = files.values.associate { it.uri to it.text },
+                fileEntities = files.values.associate { file -> file.uri to file.entities.map { it.node } },
             )
 
         private fun expansion(seedNode: Node): Expansion {
@@ -163,7 +171,7 @@ class NeighbourExpander(
                     .distinct()
                     .mapNotNull { nodes[it] }
                     .sortedBy { it.id.value }
-            return Expansion(graphId, combinedRevision(), seedNode, neighbours, edges)
+            return Expansion(graphId, revisionOverride ?: combinedRevision(), seedNode, neighbours, edges)
         }
 
         fun close() {

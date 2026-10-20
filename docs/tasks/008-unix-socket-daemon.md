@@ -1,6 +1,6 @@
 ---
 name: Unix socket daemon
-status: todo
+status: done
 depends-on: [002, 006]
 reviewers: [api-fidelity, correctness]
 ---

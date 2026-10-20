@@ -17,7 +17,7 @@ more languages.
 | 005 | [neighbour expansion](005-neighbour-expansion.md) | done | 002, 003, 004 | Incoming references and outgoing semantic-token/definition expansion. |
 | 006 | [graph store and lazy cache](006-graph-store-and-lazy-cache.md) | done | 002, 005 | Per-LSP store, deduplication, expansion cache, revision checks. |
 | 007 | [containment and grouping](007-containment-and-grouping.md) | done | 002, 004 | Entity→file→group nodes and file/group reference aggregation. |
-| 008 | [unix socket daemon](008-unix-socket-daemon.md) | todo | 002, 006 | NDJSON JSON-RPC daemon, permissions, lifecycle, error mapping. |
+| 008 | [unix socket daemon](008-unix-socket-daemon.md) | done | 002, 006 | NDJSON JSON-RPC daemon, permissions, lifecycle, error mapping. |
 | 009 | [cli and dot export](009-cli-and-dot-export.md) | todo | 005, 006, 007 | Seed selection, one-shot graph output, Graphviz writer. |
 | 010 | [renderer server](010-renderer-server.md) | todo | 008 | Ktor server, Unix-socket client, HTTP API, static assets. |
 | 011 | [web graph rendering](011-web-graph-rendering.md) | todo | 002, 010 | Kotlin/JS Canvas graph, orthogonal layout, node/edge drawing. |
@@ -25,6 +25,7 @@ more languages.
 | 013 | [end-to-end kotlin](013-end-to-end-kotlin.md) | todo | 009, 012 | Real Kotlin fixture, manual checks, docs reconciliation. |
 | 014 | [additional language frontends](014-additional-language-frontends.md) | todo | 013 | JavaScript/TypeScript, Vue, C# frontends on the same graph contract. |
 | 015 | [lsp lifecycle hardening](015-lsp-lifecycle-hardening.md) | todo | 003 | Bounded close, no lock-held awaits, callback state, git failure handling. |
+| 016 | [file and group expansion](016-file-and-group-expansion.md) | todo | 005, 007 | Real file/group neighbours, derived-expansion revision, all node kinds advertised. |
 
 ## Resolved decisions
 

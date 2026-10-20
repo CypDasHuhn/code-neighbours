@@ -1,9 +1,7 @@
 package dev.codenb.core
 
 import dev.codenb.api.Edge
-import dev.codenb.api.EdgeKey
 import dev.codenb.api.EdgeKind
-import dev.codenb.api.EdgeOrigin
 import dev.codenb.api.Expansion
 import dev.codenb.api.GraphId
 import dev.codenb.api.GroupingKind
@@ -41,31 +39,10 @@ object ContainmentBuilder {
         }
 
         val references = expansion.edges.filter { it.kind == EdgeKind.REFERENCES }
-        val fileOrigins = mutableMapOf<Directed, Int>()
         references.forEach { edge ->
             edge.origins.forEach { origin ->
-                val fromFile =
-                    fileForEntity[origin.from]
-                        ?: throw IllegalArgumentException("Missing entity node ${origin.from.value} in expansion")
-                val toFile =
-                    fileForEntity[origin.to]
-                        ?: throw IllegalArgumentException("Missing entity node ${origin.to.value} in expansion")
-                if (fromFile != toFile) {
-                    fileOrigins.merge(Directed(fromFile, toFile), origin.count, Int::plus)
-                }
-            }
-        }
-
-        val groupOrigins = mutableMapOf<Directed, Int>()
-        fileOrigins.forEach { (directed, count) ->
-            val fromGroup =
-                groupForFile[directed.from]
-                    ?: throw IllegalArgumentException("Missing file node ${directed.from.value} in expansion")
-            val toGroup =
-                groupForFile[directed.to]
-                    ?: throw IllegalArgumentException("Missing file node ${directed.to.value} in expansion")
-            if (fromGroup != toGroup) {
-                groupOrigins.merge(Directed(fromGroup, toGroup), count, Int::plus)
+                require(origin.from in entityNodes) { "Missing entity node ${origin.from.value} in expansion" }
+                require(origin.to in entityNodes) { "Missing entity node ${origin.to.value} in expansion" }
             }
         }
 
@@ -89,13 +66,8 @@ object ContainmentBuilder {
                 fileNodes.keys.map { fileId ->
                     Edge.of(EdgeKind.CONTAINS, fileId, groupForFile.getValue(fileId), 1)
                 }
-        val edges =
-            (
-                expansion.edges +
-                    containmentEdges +
-                    referenceEdges(EdgeKind.FILE_REFERENCES, fileOrigins) +
-                    referenceEdges(EdgeKind.GROUP_REFERENCES, groupOrigins)
-            ).sortedWith(EDGE_ORDER)
+        val aggregationEdges = ReferenceAggregation.edges(containedNodes.values, references)
+        val edges = (expansion.edges + containmentEdges + aggregationEdges).sortedWith(EDGE_ORDER)
         return Expansion(
             graphId = expansion.graphId,
             revision = expansion.revision,
@@ -161,31 +133,8 @@ object ContainmentBuilder {
         )
     }
 
-    private fun referenceEdges(
-        kind: EdgeKind,
-        directedCounts: Map<Directed, Int>,
-    ): List<Edge> =
-        directedCounts.entries
-            .groupBy { (directed, _) -> EdgeKey.of(kind, directed.from, directed.to) }
-            .map { (key, entries) ->
-                val origins =
-                    entries
-                        .map { (directed, count) -> EdgeOrigin(directed.from, directed.to, count) }
-                        .sortedWith(ORIGIN_ORDER)
-                Edge.of(kind, key.from, key.to, origins.sumOf { it.count }, origins)
-            }.sortedWith(EDGE_ORDER)
-
-    private data class Directed(
-        val from: NodeId,
-        val to: NodeId,
-    )
-
     private const val ROOT_KEY = "."
     private const val ROOT_LABEL = "(root)"
-
-    private val ORIGIN_ORDER: Comparator<EdgeOrigin> =
-        compareBy<EdgeOrigin> { it.from.value }
-            .thenBy { it.to.value }
 
     private val EDGE_ORDER: Comparator<Edge> =
         compareBy<Edge> { it.kind.name }

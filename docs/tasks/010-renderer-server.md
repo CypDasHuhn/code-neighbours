@@ -39,4 +39,6 @@ Canvas rendering, navigation, and engine analysis logic.
 ## Notes
 
 The server is the only socket client. The browser must never be given a socket
-path or a raw engine protocol.
+path or a raw engine protocol. `initialize` reports `open`, the current content
+`revision`, `nodeKinds` (all returnable kinds), and `expandableNodeKinds`; a
+stale `revision` is an `invalid-graph` error and requires a selector reopen.
