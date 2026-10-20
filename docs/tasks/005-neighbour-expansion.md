@@ -1,6 +1,6 @@
 ---
 name: Neighbour expansion
-status: todo
+status: done
 depends-on: [002, 003, 004]
 reviewers: [lsp-fidelity, correctness]
 ---

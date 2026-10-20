@@ -13,12 +13,30 @@ import org.eclipse.lsp4j.SymbolKind
 import java.security.MessageDigest
 
 object KotlinEntityDiscovery {
+    data class DiscoveredEntity(
+        val node: Node,
+        val symbol: DocumentSymbol,
+        val fullSpan: SourceSpan,
+        val selectionSpan: SourceSpan,
+        val symbolKind: EntitySymbolKind,
+        val referencePosition: Position,
+        val constructorKeywordPosition: Position?,
+        val parameterSpan: SourceSpan?,
+    )
+
     fun discover(
         graphId: GraphId,
         fileUri: String,
         source: String,
         symbols: List<DocumentSymbol>,
-    ): List<Node> {
+    ): List<Node> = discoverDetailed(graphId, fileUri, source, symbols).map { it.node }
+
+    fun discoverDetailed(
+        graphId: GraphId,
+        fileUri: String,
+        source: String,
+        symbols: List<DocumentSymbol>,
+    ): List<DiscoveredEntity> {
         val masked = KotlinSourceText.mask(source)
         val withoutComments = KotlinSourceText.maskComments(source)
         val packageName = KotlinSourceText.packageName(source)
@@ -49,7 +67,19 @@ object KotlinEntityDiscovery {
                     unstable = candidate.signature == null,
                 )
             }
-        return EntityIdentity.nodes(descriptors)
+        val nodes = EntityIdentity.nodes(descriptors)
+        return candidates.zip(nodes).map { (candidate, node) ->
+            DiscoveredEntity(
+                node = node,
+                symbol = candidate.symbol,
+                fullSpan = sourceSpan(candidate.range),
+                selectionSpan = sourceSpan(candidate.symbol.selectionRange),
+                symbolKind = candidate.symbolKind,
+                referencePosition = candidate.referencePosition,
+                constructorKeywordPosition = candidate.constructorKeywordPosition,
+                parameterSpan = candidate.parameterSpan,
+            )
+        }
     }
 
     private fun collect(
@@ -101,6 +131,15 @@ object KotlinEntityDiscovery {
         }
         val signature = signature(symbol, withoutComments, headerEnd, keywordStart)
         val qualifiedName = qualify(parentQualifiedName, label)
+        val selectionStart = offset(source, symbol.selectionRange.start)
+        val selectionEnd = offset(source, symbol.selectionRange.end)
+        val referencePosition =
+            if (selectionStart == start && selectionEnd == end) {
+                val nameStart = source.indexOf(label, keywordStart).takeIf { it in start..end } ?: selectionStart
+                position(source, nameStart)
+            } else {
+                symbol.selectionRange.start
+            }
         candidates.add(
             Candidate(
                 label = label,
@@ -109,6 +148,10 @@ object KotlinEntityDiscovery {
                 signature = signature,
                 fallbackText = fallbackText(source, start, end, headerEnd, keywordStart),
                 range = symbol.range,
+                symbol = symbol,
+                referencePosition = referencePosition,
+                constructorKeywordPosition = null,
+                parameterSpan = null,
             ),
         )
         if (!isContainer(symbolKind)) {
@@ -169,6 +212,22 @@ object KotlinEntityDiscovery {
                     if (text.isBlank()) null else "constructor$text"
                 }
             }
+        val parentHeaderEnd = KotlinSourceText.headerEnd(masked, parentStart, parentEnd, stopAtEquals = false)
+        val constructorKeywordPosition = constructorKeyword?.let { position(source, it) }
+        val referencePosition =
+            if (start < parentHeaderEnd) {
+                val parentName = parentSymbol.name?.trim().orEmpty()
+                val parentKeyword =
+                    KotlinSourceText.declarationKeyword(masked, parentStart, parentEnd, CONSTRUCTOR_PARENT_KEYWORDS)
+                val searchStart = parentKeyword?.end ?: parentStart
+                val parentNameStart = if (parentName.isBlank()) -1 else source.indexOf(parentName, searchStart)
+                val fallback = offset(source, parentSymbol.selectionRange.start)
+                position(source, parentNameStart.takeIf { it in searchStart until parentEnd } ?: fallback)
+            } else {
+                val keywordStart = constructorKeyword ?: KotlinSourceText.keywordOffset(masked, start, end, CONSTRUCTOR)
+                keywordStart?.let { position(source, it) } ?: symbol.selectionRange.start
+            }
+        val parameterSpan = parameters?.let { sourceSpan(range(source, it.first, it.last)) }
         return Candidate(
             label = "constructor",
             qualifiedName = qualify(parentQualifiedName, "constructor"),
@@ -176,6 +235,10 @@ object KotlinEntityDiscovery {
             signature = signature,
             fallbackText = source.substring(headerStart.coerceAtMost(end), end),
             range = symbol.range,
+            symbol = symbol,
+            referencePosition = referencePosition,
+            constructorKeywordPosition = constructorKeywordPosition,
+            parameterSpan = parameterSpan,
         )
     }
 
@@ -320,6 +383,24 @@ object KotlinEntityDiscovery {
         return (start + position.character).coerceIn(start, lineEnd(source, lineStarts, line))
     }
 
+    private fun position(
+        source: String,
+        index: Int,
+    ): Position {
+        val target = index.coerceIn(0, source.length)
+        var line = 0
+        var lineStart = 0
+        var current = 0
+        while (current < target) {
+            if (source[current] == '\n') {
+                line++
+                lineStart = current + 1
+            }
+            current++
+        }
+        return Position(line, target - lineStart)
+    }
+
     private fun lineEnd(
         source: String,
         lineStarts: List<Int>,
@@ -349,6 +430,12 @@ object KotlinEntityDiscovery {
         return starts
     }
 
+    private fun range(
+        source: String,
+        start: Int,
+        end: Int,
+    ): Range = Range(position(source, start), position(source, end))
+
     private fun sourceSpan(range: Range): SourceSpan =
         SourceSpan(
             startLine = range.start.line,
@@ -364,9 +451,14 @@ object KotlinEntityDiscovery {
         val signature: String?,
         val fallbackText: String,
         val range: Range,
+        val symbol: DocumentSymbol,
+        val referencePosition: Position,
+        val constructorKeywordPosition: Position?,
+        val parameterSpan: SourceSpan?,
     )
 
     private val CONSTRUCTOR = setOf("constructor")
+    private val CONSTRUCTOR_PARENT_KEYWORDS = setOf("class", "interface", "object", "enum")
     private val EQUALS_HEADER_KINDS =
         setOf(
             EntitySymbolKind.FUNCTION,

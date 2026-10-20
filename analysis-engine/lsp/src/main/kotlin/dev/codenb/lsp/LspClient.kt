@@ -92,6 +92,7 @@ class LspClient private constructor(
     private val requestTimeout: Duration,
     private val cleanupTimeout: Duration,
 ) : LanguageClient,
+    LspSession,
     AutoCloseable {
     private enum class Lifecycle {
         NEW,
@@ -127,7 +128,7 @@ class LspClient private constructor(
     private var serverCapabilities: ServerCapabilities? = null
 
     @Volatile
-    var semanticTokensLegend: SemanticTokensLegend? = null
+    override var semanticTokensLegend: SemanticTokensLegend? = null
         private set
 
     @Volatile
@@ -229,11 +230,11 @@ class LspClient private constructor(
         }
     }
 
-    fun didOpen(
+    override fun didOpen(
         uri: String,
         languageId: String,
         text: String,
-        version: Int = 1,
+        version: Int,
     ) {
         val read = gate.readLock()
         read.lock()
@@ -279,7 +280,7 @@ class LspClient private constructor(
         }
     }
 
-    fun didClose(uri: String) {
+    override fun didClose(uri: String) {
         val read = gate.readLock()
         read.lock()
         try {
@@ -300,7 +301,7 @@ class LspClient private constructor(
         }
     }
 
-    fun openDocument(uri: String): OpenDocument? = synchronized(stateLock) { documents[uri] }
+    override fun openDocument(uri: String): OpenDocument? = synchronized(stateLock) { documents[uri] }
 
     fun documentVersion(uri: String): Int? = synchronized(stateLock) { documents[uri]?.version }
 
@@ -310,7 +311,7 @@ class LspClient private constructor(
 
     fun allDiagnostics(): Map<String, List<Diagnostic>> = synchronized(stateLock) { diagnosticsByUri.toMap() }
 
-    fun documentSymbol(uri: String): List<Either<SymbolInformation, DocumentSymbol>> {
+    override fun documentSymbol(uri: String): List<Either<SymbolInformation, DocumentSymbol>> {
         val read = gate.readLock()
         read.lock()
         try {
@@ -322,10 +323,10 @@ class LspClient private constructor(
         }
     }
 
-    fun references(
+    override fun references(
         uri: String,
         position: Position,
-        includeDeclaration: Boolean = true,
+        includeDeclaration: Boolean,
     ): List<Location> {
         val read = gate.readLock()
         read.lock()
@@ -338,7 +339,7 @@ class LspClient private constructor(
         }
     }
 
-    fun definition(
+    override fun definition(
         uri: String,
         position: Position,
     ): DefinitionResult {
@@ -357,7 +358,7 @@ class LspClient private constructor(
         }
     }
 
-    fun semanticTokensFull(uri: String): SemanticTokens? {
+    override fun semanticTokensFull(uri: String): SemanticTokens? {
         val read = gate.readLock()
         read.lock()
         try {
