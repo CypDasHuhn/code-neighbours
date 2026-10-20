@@ -11,3 +11,9 @@ tags.json
 .project
 .settings/
 bin/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.hprof

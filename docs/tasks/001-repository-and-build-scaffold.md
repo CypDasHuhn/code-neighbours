@@ -1,6 +1,6 @@
 ---
 name: Repository and build scaffold
-status: todo
+status: done
 depends-on: []
 reviewers: [architecture]
 ---
