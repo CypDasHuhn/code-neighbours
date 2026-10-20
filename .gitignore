@@ -1,0 +1,13 @@
+.gradle/
+.kotlin/
+build/
+out/
+*.class
+.idea/
+*.iml
+tags.json
+.classpath
+.factorypath
+.project
+.settings/
+bin/
