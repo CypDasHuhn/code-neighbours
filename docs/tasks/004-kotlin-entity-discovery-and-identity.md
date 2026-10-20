@@ -1,6 +1,6 @@
 ---
 name: Kotlin entity discovery and identity
-status: todo
+status: done
 depends-on: [002, 003]
 reviewers: [lsp-fidelity, correctness]
 ---
@@ -46,3 +46,6 @@ References, expansion, file/group nodes, and non-Kotlin languages.
 The filter must be conservative: when visibility is unclear, prefer excluding a
 private-looking declaration only if the text proves it; otherwise include it and
 let reference resolution drop unconnected nodes.
+
+Real `kotlin-lsp` symbol-shape validation is deferred to ticket 013. Automated
+tests use document-symbol fixtures shaped like the target server.
