@@ -1,6 +1,6 @@
 ---
 name: Graph store and lazy cache
-status: todo
+status: done
 depends-on: [002, 005]
 reviewers: [correctness, api-fidelity]
 ---
